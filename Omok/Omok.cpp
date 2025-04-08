@@ -9,7 +9,8 @@ int Checker[20][20]{};
 string map[20][20];
 string player[2]{ " ○"," ●" };// 1. black, 2. white
 int CountBlackStone{}, CountWhiteStone{};
-constexpr string MARKER{ "@" };  //win marker
+#define MARKER "@"
+//constexpr string MARKER{ "@" };    //win marker
 // Windows 콘솔 색상 정의
 const WORD COLOR_DEFAULT = 0x07;   // 흰색 배경에 회색 글꼴
 const WORD COLOR_YELLOW = 0x0E;    // 검은색 배경에 밝은 노란색 글꼴
@@ -112,6 +113,7 @@ void ShowBoard()
     }
     cout << endl;
 
+    cout << "흑돌 : " << player[0] << ", 백돌 : " << player[1] << endl;
     cout << "입력은 (세로축, 가로축) 입니다.\n";
     cout << "입력에 0이 입력되면 프로그램이 종료됩니다.\n";
 }
@@ -257,7 +259,7 @@ int HC()
             if (map[i][j] == player[0]) {                           //흑돌일때
                 //changus_state = 1;
                 continuous_counter = 1;
-                // 좌상우하 방향 체크
+                // 가로 방향 체크
                 for (int k = 1; k < 5; k++) {
                     if (i + k < 20 && map[i + k][j] == player[0]) {
                         continuous_counter++;
@@ -268,7 +270,7 @@ int HC()
                 }
                 if (5 == continuous_counter) {                      // 5개 연속 발견시
                     for (int k = 0; k < 5; ++k) {
-                        map[i][j - k] = MARKER;
+                        map[i][j + k] = MARKER;
                     }
                     return 1;
                 }
@@ -276,7 +278,7 @@ int HC()
             if (map[i][j] == player[1]) {                           //백돌일때
                 //changus_state = 2;
                 continuous_counter = 1;
-                // 좌상우하 방향 체크
+                // 가로 방향 체크
                 for (int k = 1; k < 5; k++) {
                     if (i + k < 20 && map[i + k][j] == player[1]) {
                         continuous_counter++;
@@ -287,7 +289,7 @@ int HC()
                 }
                 if (5 == continuous_counter) {
                     for (int k = 0; k < 5; ++k) {
-                        map[i - k][j] = MARKER;
+                        map[i][j + k] = MARKER;
                     }
                     return 1;
                 }
@@ -305,7 +307,7 @@ int VC()
             if (map[i][j] == player[0]) {                           //흑돌일때
                 //changus_state = 1;
                 continuous_counter = 1;
-                // 좌상우하 방향 체크
+                // 세로 방향 체크
                 for (int k = 1; k < 5; k++) {
                     if (j + k < 20 && map[i][j + k] == player[0]) {
                         continuous_counter++;
@@ -316,7 +318,7 @@ int VC()
                 }
                 if (5 == continuous_counter) {
                     for (int k = 0; k < 5; ++k) {
-                        map[i][j - k] = MARKER;
+                        map[i + k][j] = MARKER;
                     }
                     return 1;
                 }
@@ -324,7 +326,7 @@ int VC()
             if (map[i][j] == player[1]) {                           //백돌일때
                 //changus_state = 2;
                 continuous_counter = 1;
-                // 좌상우하 방향 체크
+                // 세로 방향 체크
                 for (int k = 1; k < 5; k++) {
                     if (j + k < 20 && map[i][j + k] == player[1]) {
                         continuous_counter++;
@@ -335,7 +337,7 @@ int VC()
                 }
                 if (5 == continuous_counter) {
                     for (int k = 0; k < 5; ++k) {
-                        map[i][j - k] = MARKER;
+                        map[i + k][j] = MARKER;
                     }
                     return 1;
                 }
