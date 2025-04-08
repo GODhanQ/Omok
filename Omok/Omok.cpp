@@ -111,20 +111,9 @@ void ShowBoard()
         cout << endl;
     }
     cout << endl;
-    /*
-    for (int i = 1; i < 20; i++) {
-        cout << i << " ";
-    }
-    cout << endl;
-    for (int i = 1; i < 20; i++) {
-        cout << i << " ";
-        for (int j = 1; j < 20; j++) {
-            cout << map[i][j] << ' ';
-        }
-        cout << '\n';
-    }
-    return;
-    */
+
+    cout << "입력은 (세로축, 가로축) 입니다.\n";
+    cout << "입력에 0이 입력되면 프로그램이 종료됩니다.\n";
 }
 
 int PBS()
@@ -255,6 +244,8 @@ int CheckBoard()
         cout << "\n백돌 승리!\n";
         return 1;
     }
+
+    return 0;
 }
 
 int HC()
