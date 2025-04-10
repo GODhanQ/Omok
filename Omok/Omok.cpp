@@ -9,23 +9,22 @@ using namespace std;
 
 int Checker[20][20]{}, HContinousBoard[20][20]{};
 int CountBlackStone{}, CountWhiteStone{}, BContinousMax{}, WContinousMax{}, TContinousMax{};
-string map[20][20]{};
-string player[2]{ " ○"," ●" };          // 1. black, 2. white
-#define MARKER "@"
+string map[20][20]{}, player[2]{ " ○"," ●" };   // 1. black, 2. white
+string MARKER{ "@" };
 // Windows 콘솔 색상 정의
-const WORD COLOR_DEFAULT = 0x07;        // 흰색 배경에 회색 글꼴
-const WORD COLOR_YELLOW = 0x0E;         // 검은색 배경에 밝은 노란색 글꼴
-const WORD COLOR_RED = 0x0C;            // 검은색 배경에 밝은 빨간색 글꼴
-const WORD COLOR_GREEN = 0x0A;          // 검은색 배경에 밝은 주황색 글꼴
-const WORD COLOR_TEAL = 0x0B;           // 검은색 배경에 밝은 청록색 글꼴
+const WORD COLOR_DEFAULT = 0x07;                // 흰색 배경에 회색 글꼴
+const WORD COLOR_YELLOW = 0x0E;                 // 검은색 배경에 밝은 노란색 글꼴
+const WORD COLOR_RED = 0x0C;                    // 검은색 배경에 밝은 빨간색 글꼴
+const WORD COLOR_GREEN = 0x0A;                  // 검은색 배경에 밝은 주황색 글꼴
+const WORD COLOR_TEAL = 0x0B;                   // 검은색 배경에 밝은 청록색 글꼴
 
-void initialize();
+void Initialize();
 void ShowBoard();
-int PBS();
-int PWS();
+int PlaceBStone();
+int PlaceWStone();
 int CheckBoard();
-int HC();
-int VC();
+int Horizonal_Checker();
+int Vertical_Checker();
 int LHDiagonal_Checker();
 int LLDiagonal_Checker();
 
@@ -37,7 +36,7 @@ void setConsoleColor(WORD color) {
 
 int main()
 {
-    initialize();
+    Initialize();
 
     int PlayerTurn{ 0 };
 
@@ -50,7 +49,7 @@ int main()
         cout << "입력에 0이 입력되면 프로그램이 종료됩니다.\n";
 
         if (0 == PlayerTurn) {
-            PlayerTurn = PBS();
+            PlayerTurn = PlaceBStone();
             if (PlayerTurn == -1) break;
             if (1 == CheckBoard()) {
                 setConsoleColor(COLOR_TEAL);
@@ -61,7 +60,7 @@ int main()
             PlayerTurn = 1;
         }
         else {
-            PlayerTurn = PWS();
+            PlayerTurn = PlaceWStone();
             if (PlayerTurn == -1) break;
             if (2 == CheckBoard()) {
                 setConsoleColor(COLOR_TEAL);
@@ -78,7 +77,7 @@ int main()
     cout << "백돌의 갯수 : " << CountWhiteStone << endl;
 }
 
-void initialize()
+void Initialize()
 {
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 20; j++) {
@@ -90,11 +89,12 @@ void initialize()
 void ShowBoard()
 {
     cout << "   |";
-    for (int j = 1; j < 20; ++j) cout << setw(2) << j % 20 << setw(2) << " |";
+    for (int j = 1; j < 20; ++j) 
+        cout << setw(2) << j << setw(2) << " |";
     cout << endl;
 
     for (int i = 1; i < 20; ++i) {
-        cout << setw(2) << i % 20 << setw(2) << "|";
+        cout << setw(2) << i << setw(2) << "|";
         for (int j = 1; j < 20; ++j) {
             if (map[i][j] == player[0] || map[i][j] == player[1]) {
                 if (HContinousBoard[i][j] == TContinousMax) {
@@ -123,7 +123,7 @@ void ShowBoard()
     cout << endl;
 }
 
-int PBS()
+int PlaceBStone()
 {
     int x, y;
     bool flag{ false };
@@ -161,7 +161,7 @@ int PBS()
 
     return 1;
 }
-int PWS()
+int PlaceWStone()
 {
     int x, y;
     bool flag{ false };
@@ -205,7 +205,7 @@ int CheckBoard()
     system("cls");
     int Status{};
     //1. 가로
-    Status = HC();
+    Status = Horizonal_Checker();
     if (Status == 1)
         return 1;
     else if (Status == 2)
@@ -219,7 +219,7 @@ int CheckBoard()
         return 2;
 
     //3. 세로
-    Status = VC();
+    Status = Vertical_Checker();
     if (Status == 1)
         return 1;
     else if (Status == 2)
@@ -235,9 +235,9 @@ int CheckBoard()
     return 0;
 }
 
-int HC()
+int Horizonal_Checker()
 {
-    int continuous_counter{ 1 }, MaxTemp{};                                    // 연속된 돌 카운터
+    int continuous_counter{ 1 }, MaxTemp{};
     for (int i = 1; i < 20; i++) {
         WContinousMax = 0; BContinousMax = 0;
         for (int j = 1; j < 20; j++) {
@@ -252,14 +252,14 @@ int HC()
                     for (int l = 0; l < BContinousMax; l++)
                         if (BContinousMax >= WContinousMax) HContinousBoard[i][j + l] = BContinousMax;
                 }
-                if (5 == continuous_counter) {                      // 5개 연속 발견시
+                if (5 == continuous_counter) {
                     for (int k = 0; k < 5; ++k)
                         map[i][j + k] = MARKER;
                     return 1;
                 }
             }
 
-            else if (map[i][j] == player[1]) {                           //백돌일때
+            else if (map[i][j] == player[1]) {                      //백돌일때
                 continuous_counter = 1;
                 for (int k = 1; k < 5; k++)
                     if (j + k < 20 && map[i][j + k] == player[1]) continuous_counter++;
@@ -282,9 +282,9 @@ int HC()
 
     return 0;
 }
-int VC()
+int Vertical_Checker()
 {
-    int continuous_counter{ 1 };                                    // 연속된 돌 카운터
+    int continuous_counter{ 1 };
     for (int i = 1; i < 20; i++) {
         for (int j = 1; j < 20; j++) {
             if (map[i][j] == player[0]) {                           //흑돌일때
@@ -355,7 +355,7 @@ int LLDiagonal_Checker()
     int continuous_counter{ 1 };
     for (int i = 1; i < 20; i++) {
         for (int j = 1; j < 20; j++) {
-            if (map[i][j] == player[0]) {                                    //흑돌일때
+            if (map[i][j] == player[0]) {                           //흑돌일때
                 continuous_counter = 1;
                 for (int k = 1; k < 5; k++) {
                     if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[0]) continuous_counter++;
@@ -367,7 +367,7 @@ int LLDiagonal_Checker()
                     return 1;
                 }
             }
-            else if (map[i][j] == player[1]) {                                //백돌일때
+            else if (map[i][j] == player[1]) {                      //백돌일때
                 continuous_counter = 1;
                 for (int k = 1; k < 5; k++) {
                     if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[1]) {
