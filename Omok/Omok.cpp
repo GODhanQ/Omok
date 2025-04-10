@@ -5,16 +5,17 @@
 #include <windows.h>
 using namespace std;
 
-int Checker[20][20]{};
+int Checker[20][20]{}, HCountinousBoard[20][20]{};
 string map[20][20];
 string player[2]{ " ○"," ●" };// 1. black, 2. white
-int CountBlackStone{}, CountWhiteStone{};
+int CountBlackStone{}, CountWhiteStone{}, ContinousMax{};
 #define MARKER "@"
 //constexpr string MARKER{ "@" };    //win marker
 // Windows 콘솔 색상 정의
 const WORD COLOR_DEFAULT = 0x07;   // 흰색 배경에 회색 글꼴
 const WORD COLOR_YELLOW = 0x0E;    // 검은색 배경에 밝은 노란색 글꼴
 const WORD COLOR_RED = 0x0C;       // 검은색 배경에 밝은 빨간색 글꼴
+const WORD COLOR_GREEN = 0x0A;    // 검은색 배경에 밝은 주황색 글꼴
 
 void initialize();
 void ShowBoard();
@@ -91,6 +92,12 @@ void ShowBoard()
         cout << setw(2) << i % 20 << setw(2) << "|";
         for (int j = 1; j < 20; ++j) {
             if (map[i][j] == player[0] || map[i][j] == player[1]) {
+                if (HContinousBoard[i][j] == ContinousMax) {
+                    setConsoleColor(COLOR_GREEN);
+                    cout << setw(2) << map[i][j];
+                    setConsoleColor(COLOR_DEFAULT);
+                    continue;
+                }
                 setConsoleColor(COLOR_YELLOW);
                 cout << setw(2) << map[i][j];
                 setConsoleColor(COLOR_DEFAULT);
@@ -263,6 +270,12 @@ int HC()
                 for (int k = 1; k < 5; k++) {
                     if (i + k < 20 && map[i + k][j] == player[0]) {
                         continuous_counter++;
+                        if (ContinousMax <= continous_counter) {
+                            ContinousMax = continous_counter;
+                            for (int l = 0; l < ContinousMax; l++) {
+                                HContinousBoard[i][j - l] = ContinousMax;
+                            }
+                        }
                     }
                     else {
                         break;
@@ -282,6 +295,12 @@ int HC()
                 for (int k = 1; k < 5; k++) {
                     if (i + k < 20 && map[i + k][j] == player[1]) {
                         continuous_counter++;
+                        if (ContinousMax <= continous_counter) {
+                            ContinousMax = continous_counter;
+                        }
+                        for (int l = 0; l < ContinousMax; l++) {
+                            HContinousBoard[i][j - l] = ContinousMax;
+                        }
                     }
                     else {
                         break;
