@@ -370,12 +370,8 @@ int LLDiagonal_Checker()
             else if (map[i][j] == player[1]) {                      //백돌일때
                 continuous_counter = 1;
                 for (int k = 1; k < 5; k++) {
-                    if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[1]) {
-                        continuous_counter++;
-                    }
-                    else {
-                        break;
-                    }
+                    if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[1]) continuous_counter++;
+                    else break;
                 }
                 if (5 == continuous_counter) {
                     for (int k = 0; k < 5; ++k)
