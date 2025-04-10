@@ -7,7 +7,7 @@
 #include "MyStack.h"
 using namespace std;
 
-int Checker[20][20]{}, HContinousBoard[20][20]{};
+int HContinousBoard[20][20]{}, HStoneSum[2][20]{}, VStoneSum[2][20]{};
 int CountBlackStone{}, CountWhiteStone{}, BContinousMax{}, WContinousMax{}, TContinousMax{};
 string map[20][20]{}, player[2]{ " ○"," ●" };   // 1. black, 2. white
 string MARKER{ "@" };
@@ -15,7 +15,7 @@ string MARKER{ "@" };
 const WORD COLOR_DEFAULT = 0x07;                // 흰색 배경에 회색 글꼴
 const WORD COLOR_YELLOW = 0x0E;                 // 검은색 배경에 밝은 노란색 글꼴
 const WORD COLOR_RED = 0x0C;                    // 검은색 배경에 밝은 빨간색 글꼴
-const WORD COLOR_GREEN = 0x0A;                  // 검은색 배경에 밝은 주황색 글꼴
+const WORD COLOR_GREEN = 0x0A;                  // 검은색 배경에 밝은 초록색 글꼴
 const WORD COLOR_TEAL = 0x0B;                   // 검은색 배경에 밝은 청록색 글꼴
 
 void Initialize();
@@ -50,7 +50,10 @@ int main()
 
         if (0 == PlayerTurn) {
             PlayerTurn = PlaceBStone();
-            if (PlayerTurn == -1) break;
+            if (PlayerTurn == -1) {
+                system("cls");
+                break;
+            }
             if (1 == CheckBoard()) {
                 setConsoleColor(COLOR_TEAL);
                 cout << "\n흑돌 승리!\n";
@@ -61,7 +64,10 @@ int main()
         }
         else {
             PlayerTurn = PlaceWStone();
-            if (PlayerTurn == -1) break;
+            if (PlayerTurn == -1){
+                system("cls");
+                break;
+            }
             if (2 == CheckBoard()) {
                 setConsoleColor(COLOR_TEAL);
                 cout << "\n백돌 승리!\n";
@@ -89,8 +95,9 @@ void Initialize()
 void ShowBoard()
 {
     cout << "   |";
-    for (int j = 1; j < 20; ++j) 
+    for (int j = 1; j < 20; ++j)
         cout << setw(2) << j << setw(2) << " |";
+    cout << setw(2) << "흑 백";
     cout << endl;
 
     for (int i = 1; i < 20; ++i) {
@@ -116,9 +123,18 @@ void ShowBoard()
             else cout << setw(2) << map[i][j];
             cout << setw(2) << "|";
         }
+        cout << setw(2) << VStoneSum[0][i] << setw(3) << VStoneSum[1][i];
         cout << endl << "  ";
         for (int j = 1; j < 40; ++j) cout << "ㅡ";
         cout << endl;
+    }
+    cout << "흑 :";
+    for (int i = 1; i < 20; ++i) {
+        cout << setw(2) << HStoneSum[0][i] << setw(2) << " |";
+    }
+    cout << endl << "백 :";
+    for (int i = 1; i < 20; ++i) {
+        cout << setw(2) << HStoneSum[1][i] << setw(2) << " |";
     }
     cout << endl;
 }
@@ -126,7 +142,6 @@ void ShowBoard()
 int PlaceBStone()
 {
     int x, y;
-    bool flag{ false };
 
     while (true) {
         cout << "흑돌 차례 : ";
@@ -136,35 +151,27 @@ int PlaceBStone()
             cout << "잘못된 입력입니다. 다시 입력하세요.\n";
             continue;
         }
+        if (x == 0 || y == 0) return -1;
         if (x > 19 || x < 0 || y > 19 || y < 0) {
             cout << "입력 범위가 잘못 되었습니다. 다시 입력하세요.\n";
             continue;
         }
-        if (x == 0 || y == 0) return -1;
-        for (int i = 0; i < 20; i++) {
-            for (int j = 0; j < 20; j++) {
-                if (map[x][y] != "+") {
-                    flag = true;
-                    break;
-                }
-            }
-        }
-        if (true == flag) {
+        if (map[x][y] != "+") {
             cout << "돌이 이미 놓여져 있습니다.\n";
-            flag = false;
             continue;
         }
         break;
     }
     map[x][y] = player[0];
     CountBlackStone++;
+    VStoneSum[0][x]++;
+    HStoneSum[0][y]++;
 
     return 1;
 }
 int PlaceWStone()
 {
     int x, y;
-    bool flag{ false };
 
     while (true) {
         cout << "백돌 차례 : ";
@@ -179,23 +186,16 @@ int PlaceWStone()
             continue;
         }
         if (x == 0 || y == 0) return -1;
-        for (int i = 0; i < 20; i++) {
-            for (int j = 0; j < 20; j++) {
-                if (map[x][y] != "+") {
-                    flag = true;
-                    break;
-                }
-            }
-        }
-        if (true == flag) {
+        if (map[x][y] != "+") {
             cout << "돌이 이미 놓여져 있습니다.\n";
-            flag = false;
             continue;
         }
         break;
     }
     map[x][y] = player[1];
     CountWhiteStone++;
+    VStoneSum[1][x]++;
+    HStoneSum[1][y]++;
 
     return 1;
 }
@@ -261,24 +261,25 @@ int Horizonal_Checker()
 
             else if (map[i][j] == player[1]) {                      //백돌일때
                 continuous_counter = 1;
-                for (int k = 1; k < 5; k++)
+                for (int k = 1; k < 5; k++) {
                     if (j + k < 20 && map[i][j + k] == player[1]) continuous_counter++;
                     else break;
                 }
                 if (WContinousMax <= continuous_counter) WContinousMax = continuous_counter;
                 if (continuous_counter == WContinousMax) {
-                    for (int l = 0; l < WContinousMax; l++) 
+                    for (int l = 0; l < WContinousMax; l++)
                         if (BContinousMax <= WContinousMax) HContinousBoard[i][j + l] = WContinousMax;
                 }
                 if (5 == continuous_counter) {
-                    for (int k = 0; k < 5; ++k) 
+                    for (int k = 0; k < 5; ++k)
                         map[i][j + k] = MARKER;
                     return 2;
                 }
             }
         }
-    MaxTemp = max(WContinousMax, BContinousMax);
-    if (TContinousMax <= MaxTemp) TContinousMax = MaxTemp;
+        MaxTemp = max(WContinousMax, BContinousMax);
+        if (TContinousMax <= MaxTemp) TContinousMax = MaxTemp;
+    }
 
     return 0;
 }
