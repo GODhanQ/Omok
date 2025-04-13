@@ -7,9 +7,11 @@
 #include "MyStack.h"
 using namespace std;
 
-int HContinousBoard[20][20]{}, VContinousBoard[20][20]{}, HStoneSum[2][20]{}, VStoneSum[2][20]{};
-int HBContinousMax{}, HWContinousMax{}, HTContinousMax{};
-int VBContinousMax{}, VWContinousMax{}, VTContinousMax{};
+int HContinousBoard[20][20]{}, VContinousBoard[20][20]{};
+int HBContinousMax{}, HWContinousMax{}, HTContinousMax{}, HStoneSum[4][20]{};
+int VBContinousMax{}, VWContinousMax{}, VTContinousMax{}, VStoneSum[4][20]{};
+int LHDBContinousMax{}, LHDWContinousMax{}, LHDTContinousMax{}, LHDStoneSum[4][38]{};
+int LLDBContinousMax{}, LLDWContinousMax{}, LLDTContinousMax{}, LLDStoneSum[4][38]{};
 int CountBlackStone{}, CountWhiteStone{}, TContinousMax{};
 string map[20][20]{}, player[2]{ " ○"," ●" };   // 1. black, 2. white
 string MARKER{ "@" };
@@ -43,7 +45,7 @@ int main()
     int PlayerTurn{ 0 };
 
     while (true) {
-        system("cls");
+        //system("cls");
         ShowBoard();
 
         TContinousMax = max(HTContinousMax, VTContinousMax);
@@ -110,10 +112,12 @@ void Initialize()
 }
 void ShowBoard()
 {
+    cout << right << setw(108) << "**가로줄에 대해 최대 연속된 돌의 갯수 v  v\n";
+    cout << right << setw(98) << "**가로줄에 대해 흑,백돌의 합 v  v\n";
     cout << "   |";
     for (int j = 1; j < 20; ++j)
         cout << setw(2) << j << setw(2) << " |";
-    cout << setw(2) << "흑 백";
+    cout << setw(2) << " 흑 백 흑 백";
     cout << endl;
 
     for (int i = 1; i < 20; ++i) {
@@ -139,18 +143,44 @@ void ShowBoard()
             else cout << setw(2) << map[i][j];
             cout << setw(2) << "|";
         }
-        cout << setw(2) << VStoneSum[0][i] << setw(3) << VStoneSum[1][i];
+        // 각 가로 줄에 대해 몇개의 돌이 놓여져 있는지 출력
+        cout << setw(3) << HStoneSum[0][i] << setw(3) << HStoneSum[1][i];
+        // 각 가로 줄에 대해 최대 몇개의 연속된 돌이 놓여져 있는지 출력
+        cout << setw(3) << HStoneSum[2][i] << setw(3) << HStoneSum[3][i];
+        
         cout << endl << "  ";
         for (int j = 1; j < 40; ++j) cout << "ㅡ";
         cout << endl;
     }
-    cout << "흑 :";
-    for (int i = 1; i < 20; ++i) {
-        cout << setw(2) << HStoneSum[0][i] << setw(2) << " |";
+    // 각 세로 줄에 대해 몇개의 돌이 놓여져 있는지 출력
+    for (int i = 0; i < 4; ++i) {
+        if (i % 2 == 0) cout << "흑 :";
+        else cout << "백 :";
+        for (int j = 1; j < 20; ++j) {
+            cout << setw(2) << VStoneSum[i][j] << setw(2) << " |";
+        }
+        cout << endl;
     }
-    cout << endl << "백 :";
-    for (int i = 1; i < 20; ++i) {
-        cout << setw(2) << HStoneSum[1][i] << setw(2) << " |";
+    // 좌상우하 대각선에 대해 최대 몇개의 연속된 돌이 놓여져 있는지 출력
+    cout << "\n좌상우하 대각선에 대해 최대 몇개의 연속된 돌 (19, 1) ~ (1, 19)\n";
+    for (int i = 2; i < 4; ++i) {
+        if (i % 2 == 0) cout << "흑 :";
+        else cout << "백 :";
+        for (int j = 1; j < 38; ++j) {
+            cout << LHDStoneSum[i][j] << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+    // 좌하우상 대각선에 대해 최대 몇개의 연속된 돌이 놓여져 있는지 출력
+    cout << "좌하우상 대각선에 대해 최대 몇개의 연속된 돌 (1, 1) ~ (19, 19)\n";
+    for (int i = 2; i < 4; ++i) {
+        if (i % 2 == 0) cout << "흑 :";
+        else cout << "백 :";
+        for (int j = 1; j < 38; ++j) {
+            cout << LLDStoneSum[i][j] << " ";
+        }
+        cout << endl;
     }
     cout << "\n\n";
 }
@@ -180,8 +210,8 @@ int PlaceBStone()
     }
     map[x][y] = player[0];
     CountBlackStone++;
-    VStoneSum[0][x]++;
-    HStoneSum[0][y]++;
+    VStoneSum[0][y]++;
+    HStoneSum[0][x]++;
 
     return 1;
 }
@@ -210,8 +240,8 @@ int PlaceWStone()
     }
     map[x][y] = player[1];
     CountWhiteStone++;
-    VStoneSum[1][x]++;
-    HStoneSum[1][y]++;
+    VStoneSum[1][y]++;
+    HStoneSum[1][x]++;
 
     return 1;
 }
@@ -254,7 +284,9 @@ int CheckBoard()
 int Horizonal_Checker()
 {
     int continuous_counter{ 1 }, MaxTemp{};
+    bool Dis[2]{ false };
     for (int i = 1; i < 20; i++) {
+        Dis[0] = false; Dis[1] = false;
         HWContinousMax = 0; HBContinousMax = 0;
         for (int j = 1; j < 20; j++) {
             if (map[i][j] == player[0]) {                           //흑돌일때
@@ -263,7 +295,7 @@ int Horizonal_Checker()
                     if (j + k < 20 && map[i][j + k] == player[0]) continuous_counter++;
                     else break;
                 }
-                if (HBContinousMax <= continuous_counter) HBContinousMax = continuous_counter;
+                HBContinousMax = max(continuous_counter, HBContinousMax);
                 if (continuous_counter == HBContinousMax) {
                     for (int l = 0; l < HBContinousMax; l++)
                         if (HBContinousMax >= HWContinousMax) HContinousBoard[i][j + l] = HBContinousMax;
@@ -273,6 +305,16 @@ int Horizonal_Checker()
                         map[i][j + k] = MARKER;
                     return 1;
                 }
+
+                if (HBContinousMax > HWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (HBContinousMax < HWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
+                }
             }
 
             else if (map[i][j] == player[1]) {                      //백돌일때
@@ -281,7 +323,7 @@ int Horizonal_Checker()
                     if (j + k < 20 && map[i][j + k] == player[1]) continuous_counter++;
                     else break;
                 }
-                if (HWContinousMax <= continuous_counter) HWContinousMax = continuous_counter;
+                HWContinousMax = max(continuous_counter, HWContinousMax);
                 if (continuous_counter == HWContinousMax) {
                     for (int l = 0; l < HWContinousMax; l++)
                         if (HBContinousMax <= HWContinousMax) HContinousBoard[i][j + l] = HWContinousMax;
@@ -291,118 +333,436 @@ int Horizonal_Checker()
                         map[i][j + k] = MARKER;
                     return 2;
                 }
+
+                if (HBContinousMax > HWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (HBContinousMax < HWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
+                }
             }
         }
+
+        if (Dis[0] == true) {
+            HStoneSum[2][i] = HBContinousMax;
+            HStoneSum[3][i] = -1;
+        }
+        else if (Dis[1] == true) {
+            HStoneSum[3][i] = HWContinousMax;
+            HStoneSum[2][i] = -1;
+        }
+        else {
+            HStoneSum[2][i] = HBContinousMax;
+            HStoneSum[3][i] = HWContinousMax;
+        }
+
         MaxTemp = max(HWContinousMax, HBContinousMax);
-        if (HTContinousMax <= MaxTemp) HTContinousMax = MaxTemp;
+        HTContinousMax = max(HTContinousMax, MaxTemp);
     }
 
     return 0;
 }
 int Vertical_Checker()
 {
-    int continuous_counter{ 1 }, MaxTemp{};;
+    int continuous_counter{ 1 }, MaxTemp{};
+    bool Dis[2]{ false };
     for (int i = 1; i < 20; i++) {
+        Dis[0] = false; Dis[1] = false;
         VWContinousMax = 0; VBContinousMax = 0;
         for (int j = 1; j < 20; j++) {
-            if (map[i][j] == player[0]) {                           //흑돌일때
+            if (map[j][i] == player[0]) {                           //흑돌일때
                 continuous_counter = 1;
                 for (int k = 1; k < 5; k++) {
-                    if (j + k < 20 && map[i + k][j] == player[0]) continuous_counter++;
+                    if (j + k < 20 && map[j + k][i] == player[0]) continuous_counter++;
                     else break;
                 }
-                if (VBContinousMax <= continuous_counter) VBContinousMax = continuous_counter;
+                VBContinousMax = max(VBContinousMax, continuous_counter);
                 if (5 == continuous_counter) {
                     for (int k = 0; k < 5; ++k)
-                        map[i + k][j] = MARKER;
+                        map[j + k][i] = MARKER;
                     return 1;
                 }
+
+                if (VBContinousMax > VWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (VBContinousMax < VWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
+                }
             }
-            else if (map[i][j] == player[1]) {                           //백돌일때
+            else if (map[j][i] == player[1]) {                           //백돌일때
                 continuous_counter = 1;
                 for (int k = 1; k < 5; k++) {
-                    if (j + k < 20 && map[i + k][j] == player[1]) continuous_counter++;
+                    if (j + k < 20 && map[j + k][i] == player[1]) continuous_counter++;
                     else break;
                 }
-                if (VWContinousMax <= continuous_counter) VWContinousMax = continuous_counter;
+                VWContinousMax = max(VWContinousMax, continuous_counter);
                 if (5 == continuous_counter) {
                     for (int k = 0; k < 5; ++k)
-                        map[i + k][j] = MARKER;
+                        map[j + k][i] = MARKER;
                     return 2;
+                }
+
+                if (VBContinousMax > VWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (VBContinousMax < VWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
                 }
             }
         }
+
+        if (Dis[0] == true) {
+            VStoneSum[2][i] = VBContinousMax;
+            VStoneSum[3][i] = -1;
+        }
+        else if (Dis[1] == true) {
+            VStoneSum[3][i] = VWContinousMax;
+            VStoneSum[2][i] = -1;
+        }
+        else {
+            VStoneSum[2][i] = VBContinousMax;
+            VStoneSum[3][i] = VWContinousMax;
+        }
+
         MaxTemp = max(VWContinousMax, VBContinousMax);
-        if (VTContinousMax <= MaxTemp) VTContinousMax = MaxTemp;
+        VTContinousMax = max(VTContinousMax, MaxTemp);
     }
 
     return 0;
 }
 int LHDiagonal_Checker()
 {
-    int continuous_counter{ 1 };
-    for (int i = 1; i < 20; i++) {
-        for (int j = 1; j < 20; j++) {
+    int continuous_counter{ 1 }, MaxTemp{}, DiagonalCount{ 1 };
+    bool Dis[2]{ false };
+    for (int i = 19; i > 0; --i) {
+        Dis[0] = false; Dis[1] = false;
+        LHDBContinousMax = 0; LHDWContinousMax = 0;
+        for (int j = i; j < 20; ++j) {
+            if (map[19][j] == player[0]) {                           //흑돌일때
+                continuous_counter = 1;
+                LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                for (int k = 1; k < 20; ++k) {
+                    if (i + k > 20 && j + k > 20) break;
+                    if (i + k < 20 && j + k < 20 && map[i + k][j + k] == player[0]) {
+                        continuous_counter++;
+                        LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                        if (5 == continuous_counter) {
+                            for (int k = 0; k < 5; ++k)
+                                map[i + k][j + k] = MARKER;
+                            return 1;
+                        }
+                    }
+                    else {
+                        continuous_counter = 1;
+                        continue;
+                    }
+                }
+                if (LHDBContinousMax > LHDWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (LHDBContinousMax < LHDWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
+                }
+            }
+            else if (map[19][j] == player[1]) {                      //백돌일때
+                continuous_counter = 1;
+                LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                for (int k = 1; k < 20; ++k) {
+                    if (i + k > 20 && j + k > 20) break;
+                    if (i + k < 20 && j + k < 20 && map[i + k][j + k] == player[1]) {
+                        continuous_counter++;
+                        LHDWContinousMax = max(continuous_counter, LHDWContinousMax);
+                        if (5 == continuous_counter) {
+                            for (int k = 0; k < 5; ++k)
+                                map[i + k][j + k] = MARKER;
+                            return 1;
+                        }
+                    }
+                    else {
+                        continuous_counter = 1;
+                        continue;
+                    }
+                }
+                if (LHDBContinousMax > LHDWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (LHDBContinousMax < LHDWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
+                }
+            }
+        }
+        if (Dis[0] == true) {
+            LHDStoneSum[2][DiagonalCount] = LHDBContinousMax;
+            LHDStoneSum[3][DiagonalCount] = -1;
+        }
+        else if (Dis[1] == true) {
+            LHDStoneSum[3][DiagonalCount] = LHDWContinousMax;
+            LHDStoneSum[2][DiagonalCount] = -1;
+        }
+        else {
+            LHDStoneSum[2][DiagonalCount] = LHDBContinousMax;
+            LHDStoneSum[3][DiagonalCount] = LHDWContinousMax;
+        }
+        DiagonalCount++;
+    }
+
+    for (int i = 2; i < 19; ++i) {
+        Dis[0] = false; Dis[1] = false;
+        LHDBContinousMax = 0; LHDWContinousMax = 0;
+        for (int j = 1; j < 20; ++j) {
             if (map[i][j] == player[0]) {                           //흑돌일때
                 continuous_counter = 1;
-                for (int k = 1; k < 5; k++) {
-                    if (i + k < 20 && j + k < 20 && map[i + k][j + k] == player[0]) continuous_counter++;
-                    else break;
+                LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                for (int k = 1; k < 20; ++k) {
+                    if (i + k > 20 && j + k > 20) break;
+                    if (i + k < 20 && j + k < 20 && map[i + k][j + k] == player[0]) {
+                        continuous_counter++;
+                        LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                        if (5 == continuous_counter) {
+                            for (int k = 0; k < 5; ++k)
+                                map[i + k][j + k] = MARKER;
+                            return 1;
+                        }
+                    }
+                    else {
+                        continuous_counter = 1;
+                        continue;
+                    }
                 }
-                if (5 == continuous_counter) {
-                    for (int k = 0; k < 5; ++k)
-                        map[i + k][j + k] = MARKER;
-                    return 1;
+
+                if (LHDBContinousMax > LHDWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (LHDBContinousMax < LHDWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
                 }
             }
             else if (map[i][j] == player[1]) {                      //백돌일때
                 continuous_counter = 1;
-                for (int k = 1; k < 5; k++) {
-                    if (i + k < 20 && j + k < 20 && map[i + k][j + k] == player[1]) continuous_counter++;
-                    else break;
+                LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                for (int k = 1; k < 20; ++k) {
+                    if (i + k > 20 && j + k > 20) break;
+                    if (i + k < 20 && j + k < 20 && map[i + k][j + k] == player[0]) {
+                        continuous_counter++;
+                        LHDWContinousMax = max(continuous_counter, LHDWContinousMax);
+                        if (5 == continuous_counter) {
+                            for (int k = 0; k < 5; ++k)
+                                map[i + k][j + k] = MARKER;
+                            return 1;
+                        }
+                    }
+                    else {
+                        continuous_counter = 1;
+                        continue;
+                    }
                 }
-                if (5 == continuous_counter) {
-                    for (int k = 0; k < 5; ++k)
-                        map[i - k][j - k] = MARKER;
-                    return 2;
+                if (LHDBContinousMax > LHDWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (LHDBContinousMax < LHDWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
                 }
             }
         }
-    }
 
+        if (Dis[0] == true) {
+            LHDStoneSum[2][DiagonalCount] = LHDBContinousMax;
+            LHDStoneSum[3][DiagonalCount] = -1;
+        }
+        else if (Dis[1] == true) {
+            LHDStoneSum[3][DiagonalCount] = LHDWContinousMax;
+            LHDStoneSum[2][DiagonalCount] = -1;
+        }
+        else {
+            LHDStoneSum[2][DiagonalCount] = LHDBContinousMax;
+            LHDStoneSum[3][DiagonalCount] = LHDWContinousMax;
+        }
+        DiagonalCount++;
+    }
     return 0;
 }
 int LLDiagonal_Checker()
 {
-    int continuous_counter{ 1 };
-    for (int i = 1; i < 20; i++) {
-        for (int j = 1; j < 20; j++) {
+    int continuous_counter{ 1 }, MaxTemp{}, DiagonalCount{ 1 };
+    bool Dis[2]{ false };
+    for (int i = 1; i < 20; ++i) {
+        Dis[0] = false; Dis[1] = false;
+        LLDBContinousMax = 0; LLDWContinousMax = 0;
+        for (int j = i; j > 0; --j) {
+            if (map[1][j] == player[0]) {                           //흑돌일때
+                continuous_counter = 1;
+                LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                for (int k = 1; k < 5; ++k) {
+                    if (i + k > 20 && j - k < 0) break;
+                    if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[0]) {
+                        continuous_counter++;
+                        if (5 == continuous_counter) {
+                            LLDWContinousMax = max(continuous_counter, LLDWContinousMax);
+                            for (int k = 0; k < 5; ++k)
+                                map[i + k][j - k] = MARKER;
+                            return 1;
+                        }
+                    }
+                    else {
+                        continuous_counter = 1;
+                        continue;
+                    }
+                }
+                if (LLDBContinousMax > LLDWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (LLDBContinousMax < LLDWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
+                }
+            }
+            else if (map[1][j] == player[1]) {                      //백돌일때
+                continuous_counter = 1;
+                LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                for (int k = 1; k < 5; ++k) {
+                    if (i + k > 20 && j - k < 0) break;
+                    if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[0]) {
+                        continuous_counter++;
+                        LLDWContinousMax = max(continuous_counter, LLDWContinousMax);
+                        if (5 == continuous_counter) {
+                            for (int k = 0; k < 5; ++k)
+                                map[i + k][j - k] = MARKER;
+                            return 1;
+                        }
+                    }
+                    else {
+                        continuous_counter = 1;
+                        continue;
+                    }
+                }
+            }
+            if (LLDBContinousMax > LLDWContinousMax) {
+                Dis[0] = true; Dis[1] = false;
+            }
+            else if (LLDBContinousMax < LLDWContinousMax) {
+                Dis[0] = false; Dis[1] = true;
+            }
+            else {
+                Dis[0] = false; Dis[1] = false;
+            }
+        }
+
+        if (Dis[0] == true) {
+            LLDStoneSum[2][DiagonalCount] = LLDBContinousMax;
+            LLDStoneSum[3][DiagonalCount] = -1;
+        }
+        else if (Dis[1] == true) {
+            LLDStoneSum[3][DiagonalCount] = LLDWContinousMax;
+            LLDStoneSum[2][DiagonalCount] = -1;
+        }
+        else {
+            LLDStoneSum[2][DiagonalCount] = LLDBContinousMax;
+            LLDStoneSum[3][DiagonalCount] = LLDWContinousMax;
+        }
+        DiagonalCount++;
+    }
+
+    for (int i = 2; i < 20; ++i) {
+        Dis[0] = false; Dis[1] = false;
+        LLDBContinousMax = 0; LLDWContinousMax = 0;
+        for (int j = i; j > 0; --j) {
             if (map[i][j] == player[0]) {                           //흑돌일때
                 continuous_counter = 1;
-                for (int k = 1; k < 5; k++) {
-                    if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[0]) continuous_counter++;
-                    else break;
+                LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                for (int k = 1; k < 5; ++k) {
+                    if (i + k > 20 && j - k < 0) break;
+                    if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[0]) {
+                        continuous_counter++;
+                        LLDWContinousMax = max(continuous_counter, LLDWContinousMax);
+                        if (5 == continuous_counter) {
+                            for (int k = 0; k < 5; ++k)
+                                map[i + k][j - k] = MARKER;
+                            return 1;
+                        }
+                    }
+                    else {
+                        continuous_counter = 1;
+                        continue;
+                    }
                 }
-                if (5 == continuous_counter) {
-                    for (int k = 0; k < 5; ++k)
-                        map[i + k][j - k] = MARKER;
-                    return 1;
+                if (LLDBContinousMax > LLDWContinousMax) {
+                    Dis[0] = true; Dis[1] = false;
+                }
+                else if (LLDBContinousMax < LLDWContinousMax) {
+                    Dis[0] = false; Dis[1] = true;
+                }
+                else {
+                    Dis[0] = false; Dis[1] = false;
                 }
             }
             else if (map[i][j] == player[1]) {                      //백돌일때
                 continuous_counter = 1;
-                for (int k = 1; k < 5; k++) {
-                    if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[1]) continuous_counter++;
-                    else break;
-                }
-                if (5 == continuous_counter) {
-                    for (int k = 0; k < 5; ++k)
-                        map[i + k][j - k] = MARKER;
-                    return 2;
+                LHDBContinousMax = max(continuous_counter, LHDBContinousMax);
+                for (int k = 1; k < 5; ++k) {
+                    if (i + k > 20 && j - k < 0) break;
+                    if (i + k < 20 && j - k > 0 && map[i + k][j - k] == player[0]) {
+                        continuous_counter++;
+                        LLDWContinousMax = max(continuous_counter, LLDWContinousMax);
+                        if (5 == continuous_counter) {
+                            for (int k = 0; k < 5; ++k)
+                                map[i + k][j - k] = MARKER;
+                            return 1;
+                        }
+                    }
+                    else {
+                        continuous_counter = 1;
+                        continue;
+                    }
                 }
             }
+            if (LLDBContinousMax > LLDWContinousMax) {
+                Dis[0] = true; Dis[1] = false;
+            }
+            else if (LLDBContinousMax < LLDWContinousMax) {
+                Dis[0] = false; Dis[1] = true;
+            }
+            else {
+                Dis[0] = false; Dis[1] = false;
+            }
         }
-    }
 
+        if (Dis[0] == true) {
+            LLDStoneSum[2][DiagonalCount] = LLDBContinousMax;
+            LLDStoneSum[3][DiagonalCount] = -1;
+        }
+        else if (Dis[1] == true) {
+            LLDStoneSum[3][DiagonalCount] = LLDWContinousMax;
+            LLDStoneSum[2][DiagonalCount] = -1;
+        }
+        else {
+            LLDStoneSum[2][DiagonalCount] = LLDBContinousMax;
+            LLDStoneSum[3][DiagonalCount] = LLDWContinousMax;
+        }
+        DiagonalCount++;
+    }
     return 0;
 }
